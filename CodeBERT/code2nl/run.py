@@ -124,16 +124,16 @@ def convert_examples_to_features(examples, tokenizer, args,stage=None):
    
         if example_index < 5:
             if stage=='train':
-                logger.info("*** Example ***")
-                logger.info("idx: {}".format(example.idx))
+                print("*** Example ***")
+                print("idx: {}".format(example.idx))
 
-                logger.info("source_tokens: {}".format([x.replace('\u0120','_') for x in source_tokens]))
-                logger.info("source_ids: {}".format(' '.join(map(str, source_ids))))
-                logger.info("source_mask: {}".format(' '.join(map(str, source_mask))))
+                print("source_tokens: {}".format([x.replace('\u0120','_') for x in source_tokens]))
+                print("source_ids: {}".format(' '.join(map(str, source_ids))))
+                print("source_mask: {}".format(' '.join(map(str, source_mask))))
                 
-                logger.info("target_tokens: {}".format([x.replace('\u0120','_') for x in target_tokens]))
-                logger.info("target_ids: {}".format(' '.join(map(str, target_ids))))
-                logger.info("target_mask: {}".format(' '.join(map(str, target_mask))))
+                print("target_tokens: {}".format([x.replace('\u0120','_') for x in target_tokens]))
+                print("target_ids: {}".format(' '.join(map(str, target_ids))))
+                print("target_mask: {}".format(' '.join(map(str, target_mask))))
        
         features.append(
             InputFeatures(
@@ -230,7 +230,7 @@ def main():
                         help="random seed for initialization")
     # print arguments
     args = parser.parse_args()
-    logger.info(args)
+    print(args)
 
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1 or args.no_cuda:
@@ -262,7 +262,7 @@ def main():
                   beam_size=args.beam_size,max_length=args.max_target_length,
                   sos_id=tokenizer.cls_token_id,eos_id=tokenizer.sep_token_id)
     if args.load_model_path is not None:
-        logger.info("reload model from {}".format(args.load_model_path))
+        print("reload model from {}".format(args.load_model_path))
         model.load_state_dict(torch.load(args.load_model_path))
         
     model.to(device)
@@ -312,10 +312,10 @@ def main():
     
         
         #Start training
-        logger.info("***** Running training *****")
-        logger.info("  Num examples = %d", len(train_examples))
-        logger.info("  Batch size = %d", args.train_batch_size)
-        logger.info("  Num epoch = %d", num_train_optimization_steps*args.train_batch_size//len(train_examples))
+        print("***** Running training *****")
+        print("  Num examples = %d", len(train_examples))
+        print("  Batch size = %d", args.train_batch_size)
+        print("  Num epoch = %d", num_train_optimization_steps*args.train_batch_size//len(train_examples))
         
 
         model.train()
@@ -368,9 +368,9 @@ def main():
                 eval_sampler = SequentialSampler(eval_data)
                 eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.eval_batch_size)
                 
-                logger.info("\n***** Running evaluation *****")
-                logger.info("  Num examples = %d", len(eval_examples))
-                logger.info("  Batch size = %d", args.eval_batch_size)
+                print("\n***** Running evaluation *****")
+                print("  Num examples = %d", len(eval_examples))
+                print("  Batch size = %d", args.eval_batch_size)
 
                 #Start Evaling model
                 model.eval()
@@ -391,8 +391,8 @@ def main():
                           'global_step': global_step+1,
                           'train_loss': round(train_loss,5)}
                 for key in sorted(result.keys()):
-                    logger.info("  %s = %s", key, str(result[key]))
-                logger.info("  "+"*"*20)   
+                    print("  %s = %s", key, str(result[key]))
+                print("  "+"*"*20)   
                 
                 #save last checkpoint
                 last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
@@ -402,8 +402,8 @@ def main():
                 output_model_file = os.path.join(last_output_dir, "pytorch_model.bin")
                 torch.save(model_to_save.state_dict(), output_model_file)                    
                 if eval_loss<best_loss:
-                    logger.info("  Best ppl:%s",round(np.exp(eval_loss),5))
-                    logger.info("  "+"*"*20)
+                    print("  Best ppl:%s",round(np.exp(eval_loss),5))
+                    print("  "+"*"*20)
                     best_loss=eval_loss
                     # Save best checkpoint for best ppl
                     output_dir = os.path.join(args.output_dir, 'checkpoint-best-ppl')
@@ -455,11 +455,11 @@ def main():
 
                 (goldMap, predictionMap) = bleu.computeMaps(predictions, os.path.join(args.output_dir, "dev.gold")) 
                 dev_bleu=round(bleu.bleuFromMaps(goldMap, predictionMap)[0],2)
-                logger.info("  %s = %s "%("bleu-4",str(dev_bleu)))
-                logger.info("  "+"*"*20)    
+                print("  %s = %s "%("bleu-4",str(dev_bleu)))
+                print("  "+"*"*20)    
                 if dev_bleu>best_bleu:
-                    logger.info("  Best bleu:%s",dev_bleu)
-                    logger.info("  "+"*"*20)
+                    print("  Best bleu:%s",dev_bleu)
+                    print("  "+"*"*20)
                     best_bleu=dev_bleu
                     # Save best checkpoint for best bleu
                     output_dir = os.path.join(args.output_dir, 'checkpoint-best-bleu')
@@ -476,7 +476,7 @@ def main():
         if args.test_filename is not None:
             files.append(args.test_filename)
         for idx,file in enumerate(files):   
-            logger.info("Test file: {}".format(file))
+            print("Test file: {}".format(file))
             eval_examples = read_examples(file)
             eval_features = convert_examples_to_features(eval_examples, tokenizer, args,stage='test')
             all_source_ids = torch.tensor([f.source_ids for f in eval_features], dtype=torch.long)
@@ -511,8 +511,8 @@ def main():
 
             (goldMap, predictionMap) = bleu.computeMaps(predictions, os.path.join(args.output_dir, "test_{}.gold".format(idx))) 
             dev_bleu=round(bleu.bleuFromMaps(goldMap, predictionMap)[0],2)
-            logger.info("  %s = %s "%("bleu-4",str(dev_bleu)))
-            logger.info("  "+"*"*20)    
+            print("  %s = %s "%("bleu-4",str(dev_bleu)))
+            print("  "+"*"*20)    
 
 
 

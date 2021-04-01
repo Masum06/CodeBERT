@@ -38,6 +38,7 @@ Data statistic about the cleaned dataset for code document generation is shown i
 You can download dataset from the [website](https://drive.google.com/open?id=1rd2Tc6oUWBo7JouwexW3ksQ0PaOhUr6h). Or use the following command.
 
 ```shell
+%%bash
 pip install gdown
 mkdir data data/code2nl
 cd data/code2nl
@@ -54,15 +55,14 @@ cd ../..
 We fine-tuned the model on 4*P40 GPUs. 
 
 ```shell
-cd code2nl
-
+%%bash
 lang=php #programming language
 lr=5e-5
 batch_size=64
 beam_size=10
 source_length=256
 target_length=128
-data_dir=../data/code2nl/CodeSearchNet
+data_dir=data/code2nl/CodeSearchNet
 output_dir=model/$lang
 train_file=$data_dir/$lang/train.jsonl
 dev_file=$data_dir/$lang/valid.jsonl
@@ -80,13 +80,14 @@ python run.py --do_train --do_eval --model_type roberta --model_name_or_path $pr
 After fine-tuning, inference and evaluation are as follows:
 
 ```shell
+%%bash
 lang=php #programming language
 beam_size=10
 batch_size=128
 source_length=256
 target_length=128
 output_dir=model/$lang
-data_dir=../data/code2nl/CodeSearchNet
+data_dir=data/code2nl/CodeSearchNet
 dev_file=$data_dir/$lang/valid.jsonl
 test_file=$data_dir/$lang/test.jsonl
 test_model=$output_dir/checkpoint-best-bleu/pytorch_model.bin #checkpoint for test
